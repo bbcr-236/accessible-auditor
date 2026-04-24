@@ -195,10 +195,21 @@ app.post('/api/audit', async (req, res) => {
     }
 
     // Launch browser
+    //browser = await puppeteer.launch({
+      //headless: 'new',
+      //args: ['--no-sandbox', '--disable-setuid-sandbox']
+    //});
     browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+  headless: 'new',
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--single-process'
+  ]
+});
 
     const page = await browser.newPage();
 
