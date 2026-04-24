@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible UI Auditor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-button:hover:not(.active) {
+            color: #666;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            padding: 15px 20px;
+            background: #fee;
+            border-left: 4px solid #c33;
+            border-radius: 6px;
+            color: #c33;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .summary-bar {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+        }
+
+        .score-display {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .score-circle.excellent {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .score-circle.good {
+            background: linear-gradient(135deg, #8BC34A 0%, #7cb342 100%);
+        }
+
+        .score-circle.fair {
+            background: linear-gradient(135deg, #FFC107 0%, #ffb300 100%);
+        }
+
+        .score-circle.poor {
+            background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
+        }
+
+        .score-circle.critical {
+            background: linear-gradient(135deg, #F44336 0%, #d32f2f 100%);
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .severity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .severity-card {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .severity-card.critical {
+            background: linear-gradient(135deg, #F44336 0%, #d32f2f 100%);
+        }
+
+        .severity-card.serious {
+            background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
+        }
+
+        .severity-card.moderate {
+            background: linear-gradient(135deg, #FFC107 0%, #ffb300 100%);
+        }
+
+        .severity-card.minor {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        }
+
+        .severity-count {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .severity-label {
+            font-size: 0.9rem;
+            text-transform: capitalize;
+            opacity: 0.95;
+        }
+
+        .violations-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .violation-card {
+            background: white;
+            border-left: 5px solid;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .violation-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .violation-card.critical {
+            border-left-color: #F44336;
+        }
+
+        .violation-card.serious {
+            border-left-color: #FF9800;
+        }
+
+        .violation-card.moderate {
+            border-left-color: #FFC107;
+        }
+
+        .violation-card.minor {
+            border-left-color: #4CAF50;
+        }
+
+        .violation-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .severity-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .severity-badge.critical {
+            background: #F44336;
+        }
+
+        .severity-badge.serious {
+            background: #FF9800;
+        }
+
+        .severity-badge.moderate {
+            background: #FFC107;
+            color: #333;
+        }
+
+        .severity-badge.minor {
+            background: #4CAF50;
+        }
+
+        .violation-title {
+            flex: 1;
+        }
+
+        .violation-title h3 {
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .violation-title p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .violation-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        .violation-details p {
+            margin: 8px 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .affected-count {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .fix-suggestion {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+        }
+
+        .fix-suggestion h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .code-snippet {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .help-link {
+            margin-top: 10px;
+        }
+
+        .help-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .help-link a:hover {
+            text-decoration: underline;
+        }
+
+        .download-btn {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 12px 30px;
+            display: inline-block;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .no-violations {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .no-violations h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .no-violations p {
+            color: #666;
+            font-size: 1.05rem;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .input-section,
+            .summary-bar {
+                padding: 20px;
+            }
+
+            .severity-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .violation-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .btn-primary {
+                min-width: auto;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .tabs {
+                gap: 0;
+            }
+
+            .tab-button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>♿ Accessible UI Auditor</h1>
+            <p>Scan and improve your website's accessibility</p>
+        </header>
+
+        <div class="input-section">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="url-tab">Audit URL</button>
+                <button class="tab-button" data-tab="html-tab">Audit HTML</button>
+            </div>
+
+            <div id="url-tab" class="tab-content active">
+                <div class="form-group">
+                    <label for="url-input">Website URL</label>
+                    <input type="text" id="url-input" placeholder="https://example.com" value="">
+                    <p class="info-text">Enter the full URL including the protocol (http:// or https://)</p>
+                </div>
+            </div>
+
+            <div id="html-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="html-input">HTML Content</label>
+                    <textarea id="html-input" placeholder="Paste your HTML code here..."></textarea>
+                    <p class="info-text">Paste raw HTML or a complete page snippet</p>
+                </div>
+            </div>
+
+            <div class="error-message" id="error-message"></div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="audit-btn">Run Accessibility Audit</button>
+                <button class="btn-secondary" id="clear-btn">Clear</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Running accessibility audit...</p>
+        </div>
+
+        <div class="results-section" id="results-section">
+            <div class="summary-bar">
+                <div class="score-display">
+                    <div class="score-circle" id="score-circle">-</div>
+                    <div class="score-label">Accessibility Score</div>
+                </div>
+
+                <div class="severity-grid" id="severity-grid">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+
+            <div id="violations-list">
+                <!-- Violations will be populated here -->
+            </div>
+
+            <div class="download-btn">
+                <button class="btn-primary btn-download" id="download-btn">Download Report as HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+                
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                e.target.classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+                
+                // Clear previous results when switching tabs
+                document.getElementById('results-section').classList.remove('show');
+                document.getElementById('error-message').classList.remove('show');
+            });
+        });
+
+        // Clear form
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('url-input').value = '';
+            document.getElementById('html-input').value = '';
+            document.getElementById('error-message').classList.remove('show');
+            document.getElementById('results-section').classList.remove('show');
+        });
+
+        // Main audit function
+        document.getElementById('audit-btn').addEventListener('click', async () => {
+            const urlInput = document.getElementById('url-input').value.trim();
+            const htmlInput = document.getElementById('html-input').value.trim();
+            const errorEl = document.getElementById('error-message');
+            const loading = document.getElementById('loading');
+            const resultsSection = document.getElementById('results-section');
+
+            errorEl.classList.remove('show');
+
+            // Validate input
+            if (!urlInput && !htmlInput) {
+                errorEl.textContent = '❌ Please enter a URL or paste HTML content';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            // Show loading
+            loading.classList.add('show');
+            resultsSection.classList.remove('show');
+
+            try {
+                const response = await fetch('/api/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: urlInput || null,
+                        html: htmlInput || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Audit failed');
+                }
+
+                displayResults(data);
+                resultsSection.classList.add('show');
+            } catch (error) {
+                errorEl.textContent = `❌ ${error.message}`;
+                errorEl.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+            }
+        });
+
+        // Display results
+        function displayResults(data) {
+            const violationsList = document.getElementById('violations-list');
+            const scoreCircle = document.getElementById('score-circle');
+            const severityGrid = document.getElementById('severity-grid');
+
+            // Update score
+            scoreCircle.textContent = data.score;
+            scoreCircle.className = 'score-circle ' + getScoreClass(data.score);
+
+            // Update severity counts
+            const counts = data.severityCounts;
+            severityGrid.innerHTML = `
+                <div class="severity-card critical">
+                    <span class="severity-count">${counts.critical}</span>
+                    <span class="severity-label">Critical</span>
+                </div>
+                <div class="severity-card serious">
+                    <span class="severity-count">${counts.serious}</span>
+                    <span class="severity-label">Serious</span>
+                </div>
+                <div class="severity-card moderate">
+                    <span class="severity-count">${counts.moderate}</span>
+                    <span class="severity-label">Moderate</span>
+                </div>
+                <div class="severity-card minor">
+                    <span class="severity-count">${counts.minor}</span>
+                    <span class="severity-label">Minor</span>
+                </div>
+            `;
+
+            // Display violations or success message
+            if (data.violations.length === 0) {
+                violationsList.innerHTML = `
+                    <div class="no-violations">
+                        <div class="success-icon">✅</div>
+                        <h3>Perfect! No violations found</h3>
+                        <p>Your website meets WCAG 2.0 AA accessibility standards.</p>
+                    </div>
+                `;
+            } else {
+                violationsList.innerHTML = '<h2 style="margin-bottom: 20px; color: #333;">Issues Found</h2><div class="violations-container"></div>';
+                const container = violationsList.querySelector('.violations-container');
+
+                data.violations.forEach(violation => {
+                    const card = document.createElement('div');
+                    card.className = `violation-card ${violation.impact}`;
+                    
+                    card.innerHTML = `
+                        <div class="violation-header">
+                            <span class="severity-badge ${violation.impact}">${violation.impact}</span>
+                            <div class="violation-title">
+                                <h3>${violation.help}</h3>
+                                <p>${violation.description}</p>
+                            </div>
+                        </div>
+                        <div class="violation-details">
+                            <p><span class="affected-count">Affected elements: ${violation.affectedCount}</span></p>
+                            ${violation.nodes.length > 0 ? `<p><strong>Example:</strong> <code style="background: #f0f0f0; padding: 4px 8px; border-radius: 3px; word-break: break-all;">${escapeHtml(violation.nodes[0].html)}</code></p>` : ''}
+                        </div>
+                        <div class="fix-suggestion">
+                            <h4>💡 ${violation.suggestion.title}</h4>
+                            <pre class="code-snippet">${escapeHtml(violation.suggestion.code)}</pre>
+                        </div>
+                        <div class="help-link">
+                            <a href="${violation.helpUrl}" target="_blank" rel="noopener">Learn more →</a>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            }
+
+            // Store data for download
+            window.auditData = data;
+        }
+
+        // Download report
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const data = window.auditData;
+            if (!data) return;
+
+            const html = generateReportHTML(data);
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `accessibility-report-${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+        });
+
+        // Generate downloadable report HTML
+        function generateReportHTML(data) {
+            const severityRows = `
+                <tr>
+                    <td>Critical</td>
+                    <td style="color: #F44336; font-weight: bold;">${data.severityCounts.critical}</td>
+                </tr>
+                <tr>
+                    <td>Serious</td>
+                    <td style="color: #FF9800; font-weight: bold;">${data.severityCounts.serious}</td>
+                </tr>
+                <tr>
+                    <td>Moderate</td>
+                    <td style="color: #FFC107; font-weight: bold;">${data.severityCounts.moderate}</td>
+                </tr>
+                <tr>
+                    <td>Minor</td>
+                    <td style="color: #4CAF50; font-weight: bold;">${data.severityCounts.minor}</td>
+                </tr>
+            `;
+
+            const violationsHTML = data.violations.map(v => `
+                <div style="margin: 30px 0; padding: 20px; border-left: 5px solid; border-left-color: ${getSeverityColor(v.impact)}; background: #f9f9f9; border-radius: 6px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">${v.help}</h3>
+                    <p style="color: #666; margin: 8px 0;">${v.description}</p>
+                    <p style="margin: 10px 0;"><strong>Affected Elements:</strong> ${v.affectedCount}</p>
+                    <p style="margin: 10px 0;"><strong>Severity:</strong> <span style="padding: 4px 8px; border-radius: 3px; background: ${getSeverityColor(v.impact)}; color: white; text-transform: uppercase; font-size: 0.85rem;">${v.impact}</span></p>
+                    <div style="margin-top: 15px; padding: 12px; background: white; border-left: 3px solid #667eea; border-radius: 4px;">
+                        <h4 style="color: #667eea; margin-bottom: 10px;">Fix Suggestion: ${v.suggestion.title}</h4>
+                        <pre style="background: #1e1e1e; color: #d4d4d4; padding: 12px; overflow-x: auto; border-radius: 4px; font-family: monospace; font-size: 12px;">${escapeHtml(v.suggestion.code)}</pre>
+                    </div>
+                    <p style="margin-top: 10px;"><a href="${v.helpUrl}" style="color: #667eea; text-decoration: none;">Learn more about this issue →</a></p>
+                </div>
+            `).join('');
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Accessibility Audit Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 20px; background: #f5f5f5; }
+                        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                        h1 { color: #667eea; border-bottom: 3px solid #667eea; padding-bottom: 15px; }
+                        .score { font-size: 3em; font-weight: bold; color: ${getScoreColor(data.score)}; text-align: center; margin: 30px 0; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        table td { padding: 12px; border-bottom: 1px solid #ddd; }
+                        table tr:nth-child(even) { background: #f9f9f9; }
+                        .timestamp { color: #999; font-size: 0.9em; margin-top: 30px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Accessibility Audit Report</h1>
+                        <p><strong>URL Audited:</strong> ${escapeHtml(data.url)}</p>
+                        <p><strong>Date:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
+                        
+                        <h2>Overall Score</h2>
+                        <div class="score">${data.score}/100</div>
+                        
+                        <h2>Severity Breakdown</h2>
+                        <table>
+                            <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+                            <tbody>${severityRows}</tbody>
+                        </table>
+                        
+                        <h2>Issues Found (${data.violations.length})</h2>
+                        ${data.violations.length === 0 ? '<p style="color: #4CAF50; font-weight: bold;">✅ No violations found! Your website meets WCAG 2.0 AA standards.</p>' : violationsHTML}
+                        
+                        <div class="timestamp">
+                            <p>Generated by Accessible UI Auditor</p>
+                            <p>Report generated on ${new Date().toLocaleString()}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        // Helper functions
+        function getScoreClass(score) {
+            if (score >= 90) return 'excellent';
+            if (score >= 80) return 'good';
+            if (score >= 60) return 'fair';
+            if (score >= 40) return 'poor';
+            return 'critical';
+        }
+
+        function getScoreColor(score) {
+            if (score >= 90) return '#4CAF50';
+            if (score >= 80) return '#8BC34A';
+            if (score >= 60) return '#FFC107';
+            if (score >= 40) return '#FF9800';
+            return '#F44336';
+        }
+
+        function getSeverityColor(severity) {
+            const colors = {
+                critical: '#F44336',
+                serious: '#FF9800',
+                moderate: '#FFC107',
+                minor: '#4CAF50'
+            };
+            return colors[severity] || '#999';
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Enter to submit
+        document.getElementById('url-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('audit-btn').click();
+        });
+        document.getElementById('html-input').addEventListener('keypress', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') document.getElementById('audit-btn').click();
+        });
+    </script>
+</body>
+</html>

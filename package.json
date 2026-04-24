@@ -1,0 +1,24 @@
+{
+  "name": "accessible-auditor",
+  "version": "1.0.0",
+  "description": "Accessibility audit tool using axe-core and puppeteer",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "audit",
+    "axe-core"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axe-core": "^4.7.2",
+    "express": "^4.18.2",
+    "jsdom": "^22.1.0",
+    "puppeteer": "^21.1.1"
+  }
+}
